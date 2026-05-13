@@ -28,11 +28,52 @@ guidance about missing tooling.
     into an actual interface module.
 
 ## Phase 2 — Register map skeleton
-- [ ] Create a synthesizable register-file module for the SST-1 memory-mapped register region.
-- [ ] Define register addresses from the SST-1 spec in a SystemVerilog package.
-- [ ] Implement readable/writable control registers with reset defaults.
-- [ ] Add testbench for register writes, reads, masking, and reset behavior.
-- [ ] Commit and push.
+- [x] Create a synthesizable register-file module for the SST-1 memory-mapped register region.
+- [x] Define register addresses from the SST-1 spec in a SystemVerilog package.
+- [x] Implement readable/writable control registers with reset defaults.
+- [x] Add testbench for register writes, reads, masking, and reset behavior.
+- [x] Commit and push.
+
+  Notes:
+  - `rtl/common/sst1_consts.svh` collects byte offsets for the SST-1
+    register region (Phase 2 subset), plus bus-geometry, BAR-window, and
+    fbiInit reset-default constants. V2+/Banshee-only registers (intrCtrl,
+    fbiInit5..7, s-setup block, chromaRange, userIntrCMD, BLT engine) are
+    intentionally omitted.
+  - Originally written as a SystemVerilog `package` with `import sst1_pkg::*;`,
+    but Yosys 0.33's vanilla `read_verilog -sv` does not parse the `::`
+    package-scope token (TOK_PACKAGESEP error). Converted to a bare
+    `localparam` header `\`included` inside each consumer's module body so
+    its constants land in module scope. No include guard — each module
+    declares them in its own scope. Once the project adopts a Yosys with
+    the slang plugin (or moves to a newer Yosys with full SV-package
+    support), this can become a proper `package` again.
+  - `rtl/regs/sst1_regs.sv` implements RW mode registers (fbzMode,
+    fbzColorPath, alphaMode, fogMode, lfbMode, clipLeftRight, clipLowYHighY,
+    stipple, color0/1), the fbiInit0..4 + back_porch + video_dims RW block,
+    write-only storage for fog/za/chroma_key and triangle parameter shadow
+    (0x008..0x07C), the TMU register block (0x300..0x320), and single-cycle
+    command pulses for triangleCMD / ftriangleCMD / nopCMD / fastfillCMD /
+    swapbufferCMD. Reads from reserved or write-only offsets return 0.
+    `bus_ready` is tied high in Phase 2; FIFO back-pressure for command
+    triggers is added in Phase 4. Port widths are hardcoded literals
+    (24/32/4) so the port list does not depend on package symbols.
+  - The byte-enable masking helper is written in Verilog-2001 function form
+    (input declarations + name-as-return, no `return` statement); SV-style
+    `function ... return expr;` triggered a Yosys parse error.
+  - `sim/tb/tb_sst1_regs.sv` is self-checking: covers fbiInit0..4 reset
+    values, RW round-trip, byte-enable masking, write-only behavior,
+    reserved-offset reads, all five command pulses, and a re-reset cycle.
+    30 checks, 0 failures under Verilator 5.048.
+  - fbiInit0..4 reset values follow MAME's chosen defaults; the public spec
+    does not publish silicon defaults (marked `// TODO-COMPAT:` in RTL).
+  - Scripts ship a "tool not found, but try WSL" fallback message because
+    the dev host on Windows runs Verilator/Yosys via WSL. Both lint.sh
+    (Verilator 5.048 --lint-only) and synth_check.sh (Yosys 0.33) pass
+    cleanly via `wsl bash -c './scripts/lint.sh'` etc.
+  - Scripts now compile only `.sv` files; `.svh` headers live on the
+    include path (`-I rtl/common`) because passing a header as a top-level
+    source would try to compile its bare declarations at file scope.
 
 ## Phase 3 — Host bus abstraction
 - [ ] Implement a simple internal host/MMIO bus interface independent of real PCI.

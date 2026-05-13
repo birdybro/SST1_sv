@@ -1,0 +1,8 @@
+# Simulation / synthesis build outputs
+sim/build/
+
+# Editor / OS noise
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

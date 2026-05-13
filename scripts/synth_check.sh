@@ -20,7 +20,8 @@ if [ ! -d "${RTL_DIR}" ]; then
     exit 0
 fi
 
-mapfile -t RTL_FILES < <(find "${RTL_DIR}" -type f \( -name '*.sv' -o -name '*.svh' \) | sort)
+# Compile only .sv files; .svh headers live on the include path.
+mapfile -t RTL_FILES < <(find "${RTL_DIR}" -type f -name '*.sv' | sort)
 
 if [ "${#RTL_FILES[@]}" -eq 0 ]; then
     echo "synth_check: no SystemVerilog files under rtl/; nothing to check."
@@ -33,6 +34,10 @@ synth_check: yosys not found.
 
 Install Yosys from https://yosyshq.net/yosys/ (apt: yosys) then re-run
 scripts/synth_check.sh.
+
+If you are on Windows and have Yosys installed inside WSL, run this
+script from inside WSL, e.g.:
+    wsl bash -c 'cd /mnt/c/path/to/SST1_sv && ./scripts/synth_check.sh'
 EOF
     exit 2
 fi

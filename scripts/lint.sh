@@ -19,7 +19,10 @@ if [ ! -d "${RTL_DIR}" ]; then
     exit 0
 fi
 
-mapfile -t SV_FILES < <(find "${RTL_DIR}" -type f \( -name '*.sv' -o -name '*.svh' \) | sort)
+# Compile only .sv files; .svh files are headers and live on the include
+# path. Passing a header as a top-level source would compile its bare
+# declarations at file scope, which is not valid SV.
+mapfile -t SV_FILES < <(find "${RTL_DIR}" -type f -name '*.sv' | sort)
 
 if [ "${#SV_FILES[@]}" -eq 0 ]; then
     echo "lint: no SystemVerilog files found under rtl/; nothing to lint."
@@ -50,6 +53,10 @@ lint: no supported linter found.
 Install one of:
   - Verilator   https://verilator.org/      (apt: verilator)
   - Verible     https://github.com/chipsalliance/verible
+
+If you are on Windows and have one of these installed inside WSL, run
+this script from inside WSL, e.g.:
+    wsl bash -c 'cd /mnt/c/path/to/SST1_sv && ./scripts/lint.sh'
 
 Then re-run scripts/lint.sh.
 EOF

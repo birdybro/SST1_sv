@@ -31,7 +31,8 @@ if [ "${#TB_FILES[@]}" -eq 0 ]; then
     exit 0
 fi
 
-mapfile -t RTL_FILES < <(find "${RTL_DIR}" -type f \( -name '*.sv' -o -name '*.svh' \) 2>/dev/null | sort || true)
+# Compile only .sv files; .svh headers live on the include path.
+mapfile -t RTL_FILES < <(find "${RTL_DIR}" -type f -name '*.sv' 2>/dev/null | sort || true)
 
 mkdir -p "${BUILD_DIR}"
 
@@ -76,6 +77,10 @@ test: no supported simulator found.
 Install one of:
   - Verilator       https://verilator.org/      (apt: verilator)
   - Icarus Verilog  https://steveicarus.github.io/iverilog/
+
+If you are on Windows and have one of these installed inside WSL, run
+this script from inside WSL, e.g.:
+    wsl bash -c 'cd /mnt/c/path/to/SST1_sv && ./scripts/test.sh'
 
 Then re-run scripts/test.sh.
 EOF
