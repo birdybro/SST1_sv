@@ -14,10 +14,18 @@ guidance about missing tooling.
 - [x] Commit and push.
 
 ## Phase 1 — Architectural documentation
-- [ ] Summarize SST-1 top-level architecture in docs/architecture.md.
-- [ ] Identify major blocks: host/PCI interface, register file, command FIFO, rasterizer, texture unit, frame buffer interface, video output.
-- [ ] Document what will be modeled accurately first and what will be approximated initially.
-- [ ] Commit and push.
+- [x] Summarize SST-1 top-level architecture in docs/architecture.md.
+- [x] Identify major blocks: host/PCI interface, register file, command FIFO, rasterizer, texture unit, frame buffer interface, video output.
+- [x] Document what will be modeled accurately first and what will be approximated initially.
+- [x] Commit and push.
+
+  Notes:
+  - Architecture doc now contains an ASCII block diagram, per-block
+    descriptions, clocking/reset strategy, memory partitioning, accuracy
+    roadmap (accurate-first vs approximated-first vs deferred), and a
+    seeded open-questions section pointing at MAME/PCem cross-checks.
+  - MMIO bus signal table is the working baseline that Phase 3 will turn
+    into an actual interface module.
 
 ## Phase 2 — Register map skeleton
 - [ ] Create a synthesizable register-file module for the SST-1 memory-mapped register region.
